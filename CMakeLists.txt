@@ -27,7 +27,7 @@ deal_ii_initialize_cached_variables()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wfloat-conversion -Wmissing-braces -Wnon-virtual-dtor")
 
 add_executable(${PROJECT_NAME}
-    src/FSI.cpp
+    src/FSI_parallel.cpp
 )
 
 deal_ii_setup_target(${PROJECT_NAME})
