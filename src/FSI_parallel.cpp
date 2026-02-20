@@ -491,8 +491,10 @@ namespace Step46
       DoFTools::make_flux_sparsity_pattern(dof_handler,
                                            sparsity,
                                            cell_coupling,
-                                           face_coupling);
-      constraints.condense(sparsity);
+                                           face_coupling,
+                                           constraints,
+                                           false);
+      //constraints.condense(sparsity);
       sparsity.compress();
     }
  
