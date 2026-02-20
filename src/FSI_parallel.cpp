@@ -12,6 +12,7 @@
 #include <deal.II/lac/affine_constraints.h>
 #include <deal.II/lac/block_sparse_matrix.h>
 #include <deal.II/lac/block_vector.h>
+#include <deal.II/lac/dynamic_sparsity_pattern.h>
 #include <deal.II/lac/solver_gmres.h>
 #include <deal.II/lac/solver_cg.h>
 #include <deal.II/lac/precondition.h>
@@ -465,8 +466,8 @@ namespace Step46
               << std::endl;
  
     // SETUP 3X3 BLOCK SPARSITY PATTERN
-    TrilinosWrappers::BlockSparsityPattern sparsity(block_owned_dofs, MPI_COMM_WORLD);
-
+    //TrilinosWrappers::BlockSparsityPattern sparsity(block_owned_dofs, MPI_COMM_WORLD);
+    BlockDynamicSparsityPattern dsp(block_owned_dofs);
     {
       //system_matrix.reinit(block_owned_dofs, MPI_COMM_WORLD);
       //mass_matrix.reinit(block_owned_dofs, MPI_COMM_WORLD);
@@ -479,8 +480,7 @@ namespace Step46
       for (unsigned int c = 0; c < fe_collection.n_components(); ++c)
         for (unsigned int d = 0; d < fe_collection.n_components(); ++d)
           {
-            if (((c < dim + 1) && (d < dim + 1) &&
-                 !((c == dim) && (d == dim))) ||
+            if (((c < dim + 1) && (d < dim + 1)) ||
                 ((c >= dim + 1) && (d >= dim + 1)))
               cell_coupling[c][d] = DoFTools::always;
  
@@ -489,18 +489,16 @@ namespace Step46
           }
  
       DoFTools::make_flux_sparsity_pattern(dof_handler,
-                                           sparsity,
+                                           dsp,
                                            cell_coupling,
-                                           face_coupling,
-                                           constraints,
-                                           false);
-      //constraints.condense(sparsity);
-      sparsity.compress();
+                                           face_coupling);
+      constraints.condense(dsp);
+      //sparsity.copy_from(dsp);
     }
  
     // Initialize system matrix and vectors
-    system_matrix.reinit(sparsity);
-    mass_matrix.reinit(sparsity); // WE NEED MASS_MATRIX.BLOCK(1,1) FOR THE PRECONDITIONER
+    system_matrix.reinit(block_owned_dofs, dsp, MPI_COMM_WORLD);
+    mass_matrix.reinit(block_owned_dofs, dsp, MPI_COMM_WORLD); // WE NEED MASS_MATRIX.BLOCK(1,1) FOR THE PRECONDITIONER
  
     solution.reinit(block_owned_dofs, block_relevant_dofs, MPI_COMM_WORLD); // 3 INSTEAD OF 2
 
@@ -986,38 +984,38 @@ namespace Step46
     for (unsigned int refinement_cycle = 0; refinement_cycle < max_cycles;
          ++refinement_cycle)
       {
-        std::cout << "Refinement cycle " << refinement_cycle << std::endl;
+        pcout << "Refinement cycle " << refinement_cycle << std::endl;
  
         if (refinement_cycle > 0)
           estimated_error_norm = refine_mesh(tol);
  
         setup_dofs();
  
-        std::cout << "   Assembling..." << std::endl;
+        pcout << "   Assembling..." << mpi_rank << std::endl;
         assemble_system();
  
-        std::cout << "   Solving..." << std::endl;
+        pcout << "   Solving..." << std::endl;
         solve();
  
-        std::cout << "   Writing output..." << std::endl;
+        pcout << "   Writing output..." << std::endl;
         output_results(refinement_cycle);
  
         Point<dim> upper_right_solid_corner(0.25 - 1e-12, 0.5 - 1e-12);
         Vector<double> value(fe_collection.n_components());
         VectorTools::point_value(dof_handler, solution, upper_right_solid_corner, value);
 
-        std::cout << "   [Result logs] Displacement at (0.25, 0.5), upper right corner of the solid: ";
+        pcout << "   [Result logs] Displacement at (0.25, 0.5), upper right corner of the solid: ";
         for(unsigned int i = dim + 1; i < fe_collection.n_components(); ++i) {
-          std::cout << value[i] << " ";
+          pcout << value[i] << " ";
         }
-        std::cout << std::endl;
+        pcout << std::endl;
         if (refinement_cycle > 0)
           {
-            std::cout << "   [Result logs] Estimated error per cell norm: " << estimated_error_norm << std::endl;
+            pcout << "   [Result logs] Estimated error per cell norm: " << estimated_error_norm << std::endl;
             if (estimated_error_norm <= tol)
               break;
           }
-        std::cout << std::endl;
+        pcout << std::endl;
       }
   }
 } // namespace Step46
