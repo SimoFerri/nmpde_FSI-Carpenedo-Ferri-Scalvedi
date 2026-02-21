@@ -7,7 +7,7 @@ int main(int argc, char *argv[])
       dealii::Utilities::MPI::MPI_InitFinalize mpi_initialization(argc, argv, 1);
 
       FluidStructureProblem<2> flow_problem(1, 1);
-      flow_problem.run(5, 1e-4f);
+      flow_problem.run(15, 1e-4f);
     }
   catch (std::exception &exc)
     {
