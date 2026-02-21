@@ -1,4 +1,5 @@
 #include "FSI_parallel.hpp"
+#include <chrono>
 
 int main(int argc, char *argv[])
 {
@@ -6,8 +7,16 @@ int main(int argc, char *argv[])
     {
       dealii::Utilities::MPI::MPI_InitFinalize mpi_initialization(argc, argv, 1);
 
+      auto t_start = std::chrono::high_resolution_clock::now();
+
       FluidStructureProblem<2> flow_problem(1, 1);
-      flow_problem.run(15, 1e-4f);
+      flow_problem.run(10, 1e-4f);
+
+      auto t_end = std::chrono::high_resolution_clock::now();
+      double elapsed = std::chrono::duration<double>(t_end - t_start).count();
+
+      if (dealii::Utilities::MPI::this_mpi_process(MPI_COMM_WORLD) == 0)
+        std::cout << "[Timer] Total wall time: " << elapsed << " s" << std::endl;
     }
   catch (std::exception &exc)
     {
