@@ -1,0 +1,14 @@
+#!/bin/bash
+#PBS -N FSI_n7
+#PBS -q cpu
+#PBS -l select=1:ncpus=7:mpiprocs=7
+#PBS -l walltime=04:00:00
+#PBS -j oe
+#PBS -o /home/u10915539/fsi_project/build/7/job.log
+
+apptainer exec /work/u10915539/amsc_mk_2025.sif bash -i -c "
+    source /u/sw/etc/bash.bashrc &&
+    module load gcc-glibc dealii &&
+    cd /home/u10915539/fsi_project/build/7 &&
+    mpirun -n 7 /home/u10915539/fsi_project/build/FSI_parallel
+" > /home/u10915539/fsi_project/build/7/output.txt 2>&1
