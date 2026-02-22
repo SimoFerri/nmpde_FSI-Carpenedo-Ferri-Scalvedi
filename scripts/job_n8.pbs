@@ -1,7 +1,7 @@
 #!/bin/bash
 #PBS -N FSI_n7
 #PBS -q cpu
-#PBS -l select=1:ncpus=7:mpiprocs=7
+#PBS -l select=1:ncpus=8:mpiprocs=8
 #PBS -l walltime=04:00:00
 #PBS -j oe
 #PBS -o /home/u10915539/fsi_project/build/7/job.log
