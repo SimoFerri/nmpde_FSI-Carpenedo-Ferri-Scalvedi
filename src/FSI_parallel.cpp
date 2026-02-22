@@ -824,7 +824,7 @@ for (unsigned int refinement_cycle = 0; refinement_cycle < max_cycles;
     pcout << "Refinement cycle " << refinement_cycle << std::endl;
 
     if (refinement_cycle > 0)
-        triangulation.refine_global(1);
+        estimated_error_norm = refine_mesh(tol);
 
     setup_dofs();
     pcout << "   Assembling..." << std::endl;
