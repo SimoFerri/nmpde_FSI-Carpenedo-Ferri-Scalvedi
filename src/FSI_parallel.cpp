@@ -875,7 +875,7 @@ for (unsigned int refinement_cycle = 0; refinement_cycle < max_cycles;
 }
 
 // Explicit instantiation for dim=2
-template class StokesBoundaryValues<2>;
-template class FluidStructureProblem<2>;
-// template class StokesBoundaryValues<3>;
-// template class FluidStructureProblem<3>;
+// template class StokesBoundaryValues<2>;
+// template class FluidStructureProblem<2>;
+template class StokesBoundaryValues<3>;
+template class FluidStructureProblem<3>;
