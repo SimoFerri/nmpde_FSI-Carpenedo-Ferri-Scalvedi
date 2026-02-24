@@ -2,13 +2,16 @@
 #PBS -N FSI_n28
 #PBS -q cpu
 #PBS -l select=1:ncpus=28:mpiprocs=28
-#PBS -l walltime=04:00:00
+#PBS -l walltime=50:00:00
 #PBS -j oe
 #PBS -o /home/u10915539/fsi_project/build/28/job.log
 
 apptainer exec /work/u10915539/amsc_mk_2025.sif bash -i -c "
     source /u/sw/etc/bash.bashrc &&
     module load gcc-glibc dealii &&
+    cd /home/u10915539/fsi_project/build &&
+    make -j8 &&
+    mkdir -p /home/u10915539/fsi_project/build/28 &&
     cd /home/u10915539/fsi_project/build/28 &&
-    mpirun -n 28 /home/u10915539/fsi_project/build/FSI_parallel
+    mpirun -n 28 -x OMP_NUM_THREADS=1 /home/u10915539/fsi_project/build/FSI_parallel
 " > /home/u10915539/fsi_project/build/28/output.txt 2>&1

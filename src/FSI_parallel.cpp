@@ -834,35 +834,6 @@ for (unsigned int refinement_cycle = 0; refinement_cycle < max_cycles;
     pcout << "   Writing output..." << std::endl;
     output_results(refinement_cycle);
 
-    Point<dim>     upper_right_solid_corner(0.25 - 1e-12, 0.5 - 1e-12);
-    Vector<double> local_value(fe_collection.n_components());
-    bool           found_locally = false;
-    try
-        {
-        VectorTools::point_value(dof_handler, solution,
-                                    upper_right_solid_corner, local_value);
-        found_locally = true;
-        }
-    catch (const VectorTools::ExcPointNotAvailableHere &)
-        {}
-
-    Vector<double> global_value(fe_collection.n_components());
-    for (unsigned int i = 0; i < fe_collection.n_components(); ++i)
-        {
-        double local_entry  = found_locally ? local_value[i] : 0.0;
-        double global_entry = 0.0;
-        MPI_Allreduce(&local_entry, &global_entry, 1, MPI_DOUBLE, MPI_SUM,
-                        MPI_COMM_WORLD);
-        global_value[i] = global_entry;
-        }
-
-    pcout << "   [Result logs] Displacement at (0.25, 0.5), "
-            << "upper right corner of the solid: [";
-    for (unsigned int i = dim + 1; i < fe_collection.n_components(); ++i)
-        pcout << global_value[i]
-            << (i < fe_collection.n_components() - 1 ? ", " : "");
-    pcout << "]" << std::endl;
-
     if (refinement_cycle > 0)
         {
         pcout << "   [Result logs] Estimated error per cell norm: "
